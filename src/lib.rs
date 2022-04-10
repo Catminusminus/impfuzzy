@@ -15,7 +15,7 @@ pub fn hash(bytes: &[u8]) -> error::Result<String> {
     Ok(h)
 }
 
-pub fn hash_from_file<P: AsRef<std::path::Path>>(file_path: P) -> error::Result<String> {
+pub fn hash_from_file(file_path: impl AsRef<std::path::Path>) -> error::Result<String> {
     let mut vec = Vec::new();
     let mut file = std::fs::File::open(file_path)?;
     file.read_to_end(&mut vec)?;
