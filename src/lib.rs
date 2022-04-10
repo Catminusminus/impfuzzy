@@ -5,7 +5,7 @@ use std::io::Read;
 
 pub fn hash(bytes: &[u8]) -> error::Result<String> {
     let pe = PE::parse(bytes)?;
-    let vec: Vec<String> = pe
+    let vec: Vec<_> = pe
         .imports
         .iter()
         .map(|import| (String::from(import.dll.trim_end_matches(".dll")) + ".") + &import.name)
