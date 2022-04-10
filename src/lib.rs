@@ -3,12 +3,24 @@ use goblin::pe::PE;
 use ssdeep;
 use std::io::Read;
 
+fn trim_end_matches_with_strings<'a>(string: &'a str, array: &[&str]) -> &'a str {
+    for suffix in array {
+        if string.ends_with(suffix) {
+            return string.trim_end_matches(suffix);
+        }
+    }
+    string
+}
+
 pub fn hash(bytes: &[u8]) -> error::Result<String> {
     let pe = PE::parse(bytes)?;
     let vec: Vec<_> = pe
         .imports
         .iter()
-        .map(|import| (String::from(import.dll.trim_end_matches(".dll")) + ".") + &import.name)
+        .map(|import| {
+            (trim_end_matches_with_strings(import.dll, &[".ocx", ".sys", ".dll"]).to_owned() + ".")
+                + &import.name
+        })
         .collect();
     let h = ssdeep::hash(vec.join(",").to_lowercase().as_bytes())
         .ok_or(error::Error::Malformed("ssdeep failed".to_owned()))?;
