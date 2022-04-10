@@ -36,9 +36,19 @@ pub fn hash_from_file(file_path: impl AsRef<std::path::Path>) -> error::Result<S
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    fn trim_succeeded() {
+        assert_eq!(
+            trim_end_matches_with_strings("a.dll", &[".dll", ".sys"]),
+            "a"
+        );
+    }
+    #[test]
+    fn trim_failed() {
+        assert_eq!(
+            trim_end_matches_with_strings("a.dlll", &[".dll", ".sys"]),
+            "a.dlll"
+        );
     }
 }
