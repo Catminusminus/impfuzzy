@@ -1,7 +1,26 @@
-use goblin::error;
 use goblin::pe::PE;
 use ssdeep;
 use std::io::Read;
+#[derive(Debug)]
+pub enum Error {
+    Parse(goblin::error::Error),
+    SsdeepHashing,
+    IO(std::io::Error),
+}
+
+type Result<T> = std::result::Result<T, Error>;
+
+impl From<goblin::error::Error> for Error {
+    fn from(err: goblin::error::Error) -> Error {
+        Error::Parse(err)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Error {
+        Error::IO(err)
+    }
+}
 
 fn trim_end_matches_with_strings<'a>(string: &'a str, array: &[&str]) -> &'a str {
     for suffix in array {
@@ -12,7 +31,7 @@ fn trim_end_matches_with_strings<'a>(string: &'a str, array: &[&str]) -> &'a str
     string
 }
 
-pub fn hash(bytes: &[u8]) -> error::Result<String> {
+pub fn hash(bytes: &[u8]) -> Result<String> {
     let pe = PE::parse(bytes)?;
     let vec: Vec<_> = pe
         .imports
@@ -22,12 +41,11 @@ pub fn hash(bytes: &[u8]) -> error::Result<String> {
                 + &import.name
         })
         .collect();
-    let h = ssdeep::hash(vec.join(",").to_lowercase().as_bytes())
-        .ok_or(error::Error::Malformed("ssdeep failed".to_owned()))?;
+    let h = ssdeep::hash(vec.join(",").to_lowercase().as_bytes()).ok_or(Error::SsdeepHashing)?;
     Ok(h)
 }
 
-pub fn hash_from_file(file_path: impl AsRef<std::path::Path>) -> error::Result<String> {
+pub fn hash_from_file(file_path: impl AsRef<std::path::Path>) -> Result<String> {
     let mut vec = Vec::new();
     let mut file = std::fs::File::open(file_path)?;
     file.read_to_end(&mut vec)?;
