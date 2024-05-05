@@ -1,6 +1,6 @@
 use goblin::pe::PE;
 use phf::phf_map;
-use ssdeep;
+use ssdeep::{Generator, RawFuzzyHash};
 use std::io::Read;
 
 #[derive(Debug)]
@@ -574,14 +574,11 @@ pub fn ord_lookup<'a>(libname: &'a str, ord: u16) -> String {
     }
 }
 
-pub fn compare(hash1: &[u8], hash2: &[u8]) -> Option<i8> {
-    ssdeep::compare(hash1, hash2)
-}
-
 pub fn make_api_list(import: &goblin::pe::import::Import) -> Option<String> {
-    let mut no_iat_flag = false;
+    //let mut no_iat_flag = false;
     let libname = trim_end_matches_with_strings(import.dll, &[".ocx", ".sys", ".dll"]).to_owned();
-    let funcname = if import.name == "" {
+    let funcname = if import.name.starts_with("ORDINAL") {
+        // Fix me
         ord_lookup(&import.dll.to_lowercase(), import.ordinal)
     } else {
         import.name.to_string()
@@ -602,8 +599,13 @@ pub fn hash(bytes: &[u8]) -> Result<String> {
         .iter()
         .filter_map(|import| make_api_list(import))
         .collect();
-    let h = ssdeep::hash(vec.join(",").to_lowercase().as_bytes()).ok_or(Error::SsdeepHashing)?;
-    Ok(h)
+    let mut generator = Generator::new();
+    generator.update(vec.join(",").to_lowercase().as_bytes());
+    let hash: RawFuzzyHash = match generator.finalize() {
+        Ok(v) => Ok(v),
+        Err(_) => Err(Error::SsdeepHashing), // Fix me
+    }?;
+    Ok(hash.to_string())
 }
 
 pub fn hash_from_file(file_path: impl AsRef<std::path::Path>) -> Result<String> {
@@ -629,5 +631,9 @@ mod tests {
             trim_end_matches_with_strings("a.dlll", &[".dll", ".sys"]),
             "a.dlll"
         );
+    }
+    #[test]
+    fn hash_is_correct() {
+        assert_eq!();
     }
 }
