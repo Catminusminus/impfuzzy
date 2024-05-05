@@ -1,5 +1,5 @@
 ## impfuzzy
-An [impfuzzy](https://github.com/JPCERTCC/impfuzzy) implementation written in Rust 
+A blazing-fast⚡ [impfuzzy](https://github.com/JPCERTCC/impfuzzy) implementation written in Rust.
 
-## Status
-WIP
+## License
+GPL v2
