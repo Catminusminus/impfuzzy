@@ -634,6 +634,9 @@ mod tests {
     }
     #[test]
     fn hash_is_correct() {
-        assert_eq!();
+        assert_eq!(
+            hash_from_file("testbin/test.exe").unwrap(),
+            "3:spdRtUXTdn:CTgTdn"
+        );
     }
 }
