@@ -636,7 +636,7 @@ mod tests {
     fn hash_is_correct() {
         assert_eq!(
             hash_from_file("testbin/test.exe").unwrap(),
-            "3:spdRtUXTdn:CTgTdn"
+            "48:8/Tbnw/LnNV06EAjIj1fB+xBMLSQMftMS1o:8nnw/LNVxEAkjZsXvtMS1o"
         );
     }
 }
